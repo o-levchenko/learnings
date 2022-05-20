@@ -1,6 +1,6 @@
-const { Engine, Render, Runner, Composite, Bodies, MouseConstraint, Mouse } = Matter;
+const { Engine, Render, Runner, Composite, World, Bodies } = Matter;
 
-const width = 800;
+const width = 600;
 const height = 600;
 
 const engine = Engine.create();
@@ -9,40 +9,108 @@ const render = Render.create({
     element: document.body,
     engine: engine,
     options: {
-        wireframes: false,
-        showAngleIndicator: true,
-        showAxes: true,
-        showCollisions: true,
+        wireframes: true,
         width, 
         height
     }
 });
 Render.run(render);
 Runner.run(Runner.create(), engine);
-Composite.add(world, MouseConstraint.create(engine, {
-    mouse: Mouse.create(render.canvas) 
-}));
 
 // Walls
+const rows = 5;
+const columns = 3;
+
 const walls = [
-    Bodies.rectangle(400, 0, 800, 40, { isStatic: true }),
-    Bodies.rectangle(400, 600, 800, 40, { isStatic: true }),
-    Bodies.rectangle(0, 300, 40, 600, { isStatic: true }),
-    Bodies.rectangle(800, 300, 40, 600, { isStatic: true })
+    Bodies.rectangle(width/2, 0, width, 40, { isStatic: true }),
+    Bodies.rectangle(width / 2, height, width, 40, { isStatic: true }),
+    Bodies.rectangle(0, height / 2, 40, height, { isStatic: true }),
+    Bodies.rectangle(width, height / 2, 40, height, { isStatic: true })
 ];
 Composite.add(world, walls);
 
-// Random Shapes
+const shuffle = (arr) => {
+    let counter = arr.length;
 
-for (let i = 0; i < 20; i++) {
-    if (Math.random() > 0.5) {
-        Composite.add(
-            world, 
-            Bodies.rectangle(Math.random() * width, Math.random() * height, 50, 50));
-    } else {
-        Composite.add(
-            world,
-            Bodies.circle(Math.random() * width, Math.random() * height, 35));
+    while (counter > 0) {
+        const index = Math.floor(Math.random() * counter);
+        
+        counter--;
+        
+        const temp = arr[counter];
+        arr[counter] = arr[index];
+        arr[index] = temp;
     }
+
+    return arr;
 }
 
+
+// Maze generation
+const grid = Array(rows)
+    .fill(null)
+    .map(() => Array(columns).fill(false));
+
+const verticals = Array(rows)
+    .fill(null)
+    .map(() => Array(columns - 1).fill(false));
+
+const horizontals = Array(rows - 1)
+    .fill(null)
+    .map(() => Array(columns).fill(false));
+
+const startRow = Math.floor(Math.random() * rows);
+const startColumn = Math.floor(Math.random() * columns);
+
+const stepThroughCell = (row, column) => {
+    // If I have visited the call at [row, column], then return
+    if (grid[row][column]) return;
+
+    // Mark this cell as visited
+    grid[row][column] = true;
+
+    // Assemble randomly-ordered list of neighbors
+    let neightbors = shuffle([
+        [row - 1, column, 'up'],
+        [row, column - 1, 'left'],
+        [row + 1, column, 'down'],
+        [row, column + 1, 'right']
+    ]);
+    // For each neighbor..
+    for (let neighbor of neightbors) {
+        const [nextRow, nextColumn, direction] = neighbor;
+        // see if that neightbor is out of bounds
+        if (nextRow < 0 || nextRow >= rows || nextColumn < 0 || nextColumn >= columns) {
+            continue;
+        }
+        // see if we have visited that neighbor, continue to next neighbor
+        if (grid[nextRow][nextColumn]) {
+            continue;
+        }
+
+        // Remove a wall from either horizontals or verticals
+        switch(direction) {
+            case 'up':
+                horizontals[row-1][column] = true;
+                break;
+            case 'down':
+                horizontals[row][column] = true;
+                break;
+            case 'right':
+                verticals[row][column] = true;
+                break;
+            case 'left':
+                verticals[row][column - 1] = true;
+                break;
+        }
+
+        // Visit that next cell
+        stepThroughCell(nextRow, nextColumn);
+    }
+
+};
+
+stepThroughCell(startRow, startColumn);
+console.log(startRow, startColumn);
+console.log(verticals);
+console.log(horizontals);
