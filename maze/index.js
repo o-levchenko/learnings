@@ -1,10 +1,10 @@
 const { Engine, Render, Runner, Composite, World, Bodies, Body, Events } = Matter;
 
-const width = 600;
-const height = 600;
+const width = window.innerWidth;
+const height = window.innerHeight;
 
-const rows = 6;
-const columns = rows * width / height;
+const rows = 2;
+const columns = 3;
 
 const cellWidth = width / columns;
 const cellHeight = height / rows
@@ -16,7 +16,7 @@ const render = Render.create({
     element: document.body,
     engine: engine,
     options: {
-        wireframes: true,
+        wireframes: false,
         width, 
         height
     }
@@ -27,10 +27,10 @@ Runner.run(Runner.create(), engine);
 // Walls
 
 const walls = [
-    Bodies.rectangle(width / 2, 0, width, 10, { isStatic: true }),
-    Bodies.rectangle(width / 2, height, width, 10, { isStatic: true }),
-    Bodies.rectangle(0, height / 2, 10, height, { isStatic: true }),
-    Bodies.rectangle(width, height / 2, 10, height, { isStatic: true })
+    Bodies.rectangle(width / 2, 0, width, 2, { isStatic: true }),
+    Bodies.rectangle(width / 2, height, width, 2, { isStatic: true }),
+    Bodies.rectangle(0, height / 2, 2, height, { isStatic: true }),
+    Bodies.rectangle(width, height / 2, 2, height, { isStatic: true })
 ];
 Composite.add(world, walls);
 
@@ -126,10 +126,13 @@ horizontals.forEach((row, rowIndex) => {
             columnIndex * cellWidth + cellWidth / 2 ,  
             rowIndex * cellHeight + cellHeight,
             cellWidth,
-            10,
+            5,
             {
                 label: 'wall',
-                isStatic: true
+                isStatic: true,
+                render: {
+                    fillStyle: 'red'
+                }
             }
         );
         Composite.add(world, wall);
@@ -144,11 +147,14 @@ verticals.forEach((row, rowIndex) => {
         const wall = Bodies.rectangle(
             columnIndex * cellWidth + cellWidth,
             rowIndex * cellHeight + cellHeight / 2,
-            10,
+            5,
             cellHeight,
             {
                 label: 'wall',
-                isStatic: true
+                isStatic: true,
+                render: {
+                    fillStyle: 'red'
+                }
             }
         );
         Composite.add(world, wall);
@@ -164,19 +170,25 @@ const goal = Bodies.rectangle(
     cellHeight * .7,
     {
         label: 'goal',
-        isStatic: true
+        isStatic: true,
+        render: {
+            fillStyle: 'green'
+        }
     }
 );
 Composite.add(world, goal);
 
 // Ball
-
+const ballRadius = Math.min(cellWidth, cellHeight) / 4;
 const ball = Bodies.circle(
     cellWidth / 2,
     cellHeight / 2,
-    cellWidth / 4, 
+    ballRadius, 
     {
-        label: 'goal'
+        label: 'goal',
+        render: {
+            fillStyle: 'blue'
+        }
     }
 );
 Composite.add(world, ball)
@@ -190,20 +202,20 @@ document.addEventListener('keydown', event => {
 
     if (event.keyCode === 87) {
         console.log('move ball up');
-        Body.setVelocity(ball, {x, y: y - 5});
+        Body.setVelocity(ball, {x, y: y - 3});
     }
 
     if (event.keyCode === 68) {
         console.log('move ball right');
-        Body.setVelocity(ball, {x: x + 5, y});
+        Body.setVelocity(ball, {x: x + 3, y});
     }
 
     if (event.keyCode === 83) {
-        Body.setVelocity(ball, {x, y: y + 5});
+        Body.setVelocity(ball, {x, y: y + 3});
     }
 
     if (event.keyCode === 65) {
-        Body.setVelocity(ball, {x: x - 5, y});
+        Body.setVelocity(ball, {x: x - 3, y});
     }
 });
 
@@ -221,6 +233,7 @@ Events.on(engine, 'collisionStart', event => {
             world.bodies.forEach(body => {
                 if (body.label === 'wall') {
                     Body.setStatic(body, false);
+                    document.querySelector('.winner').classList.remove('hidden');
                 }
             })
         }
