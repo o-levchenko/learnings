@@ -3,8 +3,8 @@ const { Engine, Render, Runner, Composite, World, Bodies, Body, Events } = Matte
 const width = window.innerWidth;
 const height = window.innerHeight;
 
-const rows = 2;
-const columns = 3;
+const rows = 20;
+const columns = Math.round(width / height * rows);
 
 const cellWidth = width / columns;
 const cellHeight = height / rows
@@ -202,20 +202,20 @@ document.addEventListener('keydown', event => {
 
     if (event.keyCode === 87) {
         console.log('move ball up');
-        Body.setVelocity(ball, {x, y: y - 3});
+        Body.setVelocity(ball, {x, y: y - 5});
     }
 
     if (event.keyCode === 68) {
         console.log('move ball right');
-        Body.setVelocity(ball, {x: x + 3, y});
+        Body.setVelocity(ball, {x: x + 5, y});
     }
 
     if (event.keyCode === 83) {
-        Body.setVelocity(ball, {x, y: y + 3});
+        Body.setVelocity(ball, {x, y: y + 5});
     }
 
     if (event.keyCode === 65) {
-        Body.setVelocity(ball, {x: x - 3, y});
+        Body.setVelocity(ball, {x: x - 5, y});
     }
 });
 
