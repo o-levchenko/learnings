@@ -1,23 +1,19 @@
 #!/usr/bin/end node
 
-const fs = require('fs');
-const util = require('util');
-const chalk = require('chalk');
-const path = require('path');
+import { promises, readdir } from 'fs';
+import { join } from 'path';
+import chalk from 'chalk';
 
-const { lstat } = fs.promises
-
-// console.log(argv);
-
+const { lstat } = promises
 const targetDir = process.argv[2] || process.cwd();
 
-fs.readdir(targetDir, async (err, filenames) => {
+readdir(targetDir, async (err, filenames) => {
     if (err) {
         console.log(err);
     }
 
     const statPromises = filenames.map(filename => {
-        return lstat(path.join(targetDir, filename));
+        return lstat(join(targetDir, filename));
     })
 
     const allStats = await Promise.all(statPromises);
